@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Couse: Artificial Intelligence EIC0029
 Authors: Fátima Barros up201608444 and Miguel Ferreira up201606158
