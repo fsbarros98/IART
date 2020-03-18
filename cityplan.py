@@ -2,6 +2,7 @@
 Couse: Artificial Intelligence EIC0029
 Authors: Fátima Barros up201608444 and Miguel Ferreira up201606158
 Created on 13/03/2020
+Updated until 18/03/2020
 """
 import math
 import copy
