@@ -334,7 +334,11 @@ class CityInfo:
         
         #lets go through all sub_city from _list and add them to the city_plan
         for sub_city in _list:
-            self.construct_building(startpoint,sub_city) #consctruct
+            self.construct_building(startpoint,sub_city) #consctruct the project: sub_city
+            #for each resi_building and util_building in sub_city: cells are updates in the residental_project and utility_project coordinates argument
+            #city_plan is also updated with the buildings it possesses 
+            
+            
             for residental_project in sub_city.resi_building:
                 updated_cell=[]
                 for x,y in residental_project.coordinates:
@@ -363,28 +367,33 @@ class CityInfo:
     
     
     
-    
+    #most important function that retrieves to others for the construction of the buildings
     def construct(self):
         _list=[]
         #hyper-parameter: beaware of city size for these parameters
+        #a sub_city is created bellow with this hyper-paramentes
+
         sub_city_h=10
         sub_city_w=10
-        
-        count=int((self.H * self.W) / (sub_city_h * sub_city_w))
+        count=int((self.H * self.W) / (sub_city_h * sub_city_w)) #how many sub_city(s) fit in the city? -> count type int
         
         residental_projects=copy.copy(self.residental_projects)
         utility_projects=copy.copy(self.utility_projects)
         
-        for i in range(count):
+        for i in range(count): #iterate over the times a sub_city fits the city
             if not residental_projects:
                 residental_projects = copy.copy(self.residental_projects)
             if not utility_projects:
                 utility_projects = copy.copy(self.utility_projects)
-                
+            #create the subcity
             sub_city=SubCity(sub_city_h,sub_city_w,residental_projects=[residental_projects.pop()],utility_projects=[utility_projects.pop()],dist=self.dist)
+            #create the city_plan (sub_city.construct() method)
             city_plan=sub_city.construct()
+            #append this city_plan to _list
             _list.append(city_plan)
+            #calculate the value of self according to the value of the city_plan
             self.value+=city_plan.value
+        
         city_plan=self.unit_city(_list)
         city_plan.value=self.value
         return city_plan
@@ -571,6 +580,8 @@ class Utility_Project(BuildingPlan): #super
         self.service=int(service)   
 
 
+
+#class for input parser
 class InputParser: 
     def __call__ (self, data_path, *args, **kwargs):
         with open(data_path) as file:
@@ -602,7 +613,7 @@ class InputParser:
         return city
                         
                 
-                
+  #create submission file as requested              
 def result(file_path, city_plan, *args, **kwargs):
     with open(file_path, 'w+') as file:
         result=""
@@ -623,13 +634,18 @@ def result(file_path, city_plan, *args, **kwargs):
 
 
 if __name__ == '__main__':
+    #create input parser 
     input_parser=InputParser()
     city=input_parser("data/a_example.in")
-    for project in city.projects:
-        print(project.plan)
+    
+    #for project in city.projects:
+    #    print(project.plan)
+    #construct city plan
     city_plan=city.construct()
+    #print city value
     print("city value {}".format(city_plan.value))
-    result('res.txt',city_plan)
+    #save results
+    result('result_a_example.txt',city_plan)
 
     
 
