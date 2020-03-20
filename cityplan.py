@@ -15,7 +15,7 @@ def empty_matrix(i,j):
         matrix.append(['.' for y in range(j)])
     return matrix
 
-
+#class used in final plan of the city
 class CityPlan:
     def __init__(self,H,W):
         self.H=H #rows
@@ -39,7 +39,7 @@ class SubCity:
         self.residental_projects=residental_projects
         self.utility_projects=utility_projects
         self.dist=dist
-        
+        #initialize variables
         self.resi_building=[]
         self.util_building=[]
         
@@ -47,7 +47,7 @@ class SubCity:
         self.plan=empty_matrix(self.H,self.W)
         
     
-    #find free cells in the city
+    #find free cells in the city - all of them
     def get_free_cells(self):
         free_cell=[]
         for i in range(self.H):
@@ -66,47 +66,53 @@ class SubCity:
                     return True
         return False
                 
-    #returns last free cell in city
+    #returns last free cell in city plan (matrix)
     def get_last_free_cell(self):
         for i in range(self.H):
             for j in range(self.W):
                 if self.plan[self.H-1-i][self.W-1-j]=='.':
-                    return (self.H-1-1, self.W-1-j)
+                    return (self.H-1-i, self.W-1-j)
         return False #if there's no free cell
     
     
     def build_scenario(self):
-        city_plan=CityPlan(self.H,self.W)
-        residental_projects=copy.copy(self.residental_projects)
+        city_plan=CityPlan(self.H,self.W) #create cityplan of size H and W
+        #copy residental and utility projects to new variables (same names)
+        residental_projects=copy.copy(self.residental_projects) 
         utility_projects=copy.copy(self.utility_projects)
         
-        finish=False #flag
+        finish=False #flag 
         
         while not finish:
-            free_cell=self.get_free_cells()
+            free_cell=self.get_free_cells() #gets all free cells in the city
             empty_cell=False
             #resi
-            if residental_projects:
-                residental_project=copy.copy(residental_projects.pop())
+            if residental_projects: #are there residental_projects?
+                residental_project=copy.copy(residental_projects.pop()) 
+                #takes 1 project from residental_projects and copies it to residental_project, 
+                #eliminating it from the list of projects
                 
                 residental_projects_not_construct=True
                 
                 while residental_projects_not_construct and free_cell:
+                    #see construct_building for more information
                     updated_cells,filtered_cell=self.construct_building(free_cell.pop(0),residental_project)
-                    if updated_cells:
-                        residental_project.coordinates=updated_cells
-                        residental_project.filtered_cell=filtered_cell
-                        city_plan.resi_building.append(residental_project)
-                        city_plan.plan=self.plan
+                    if updated_cells: #if cells are updared
+                        residental_project.coordinates=updated_cells #add them to residental_projects.coordinates
+                        residental_project.filtered_cell=filtered_cell #add filtered_cell (occupied cell) to residental_project.filtered_cell
+                        city_plan.resi_building.append(residental_project) #append the project to city_plan.resi_building
+                        city_plan.plan=self.plan #update city map
                         residental_projects_not_construct=False
                         break
-            else:
+            else: #if there aren't residental_projects
                 empty_cell=True
                 
+                #if there aren't residental_projects, and there is free cells, and the first free cell isn't the last one, copy residental_projects
             if not residental_projects and free_cell and not free_cell[0]==self.get_last_free_cell():
                 residental_projects=copy.copy(self.residental_projects)
             
             #util
+                #same structure as residental, see comments above
             free_cell=self.get_free_cells()
             if utility_projects:
                 utility_project=copy.copy(utility_projects.pop())
@@ -134,8 +140,6 @@ class SubCity:
         return city_plan                    
             
         
-    
-    
     def get_utility_building(self):
         pass
     
@@ -143,7 +147,7 @@ class SubCity:
 #every t ype of utility service accessible to the residents of that building. (If there are two or more utility
 #buildings providing the same type of service, the residential building still earns only r points for this type of
 #service.)   
-    
+    #this function builds the scenario of the city and then calculates it's value through the description above
     def construct(self):
         city_plan=self.build_scenario()
         value=0
@@ -154,23 +158,25 @@ class SubCity:
             utility_services[util_building.service]=[]
             i=0
             for resi_building in city_plan.resi_building:
-                if i in utility_services[util_building.service]:
+                if i in utility_services[util_building.service]: #selects type of service of the building
                     i+=1
                     continue
-                if self.verify_distance(resi_building, util_building):
+                if self.verify_distance(resi_building, util_building): #if distance is smaller then maximum walking distance
+                    #appends type of service of the utility building to utility_services 
                     utility_services[util_building.service].append(i)
+                    #calculation of the value = value + capacity of the building
                     value += resi_building.capacity
                 i+=1
-            
+        #updates city_plan balue    
         city_plan.value=value
         return city_plan
             
-            
-    def construct_building(self,startpoint,project):
+#consctructs building if it can fit the plan: receives self,startpoint and the project
+    def construct_building(self,startpoint,project): 
         updated_cell=[]
         filtered_cell=[]
         
-        def undolog_plan():
+        def undolog_plan(): #functions that solves the plan if project doens't fit: turns updates cells into free cells
             for x_cell,y_cell in updated_cell:
                 self.plan[x_cell][y_cell]='.'
                 
@@ -178,21 +184,22 @@ class SubCity:
             _x,_y=(x+startpoint[0],y+startpoint[1])
             
             try:
-                if not self.plan[_x][_y]=='.':
+                if not self.plan[_x][_y]=='.': #if the cell _x,_y is not free, undolog_plan()
                     undolog_plan()
                     return False, False
                 else:
-                    updated_cell.append((_x,_y))
-                    self.plan[_x][_y]=project.plan[x][y]
+                    updated_cell.append((_x,_y)) #else, append updated_cell _x,_y
+                    self.plan[_x][_y]=project.plan[x][y] #update city plan cells
                     if project.plan[x][y]=='#':
-                        filtered_cell.append((_x,_y))
-            except IndexError as e:
+                        filtered_cell.append((_x,_y)) #if project cell is occupied, then added to ffiltered_cell
+            except IndexError as e: #errors in index do undolog_plan()
                 undolog_plan()
                 return False, False
             
         return updated_cell,filtered_cell
                     
 
+#most important class where city is created with the help of class subcity
 class CityInfo:
     def __init__(self,H,W,dist,bplans): 
         #H=rows, W=columns, dist=maximum walking distance, bplans=building plans
@@ -255,6 +262,8 @@ class CityInfo:
                     return (self.H-1-1, self.W-1-j)
         return False #if there's no free cell
     
+    
+    #for more information on this, see build_scenario in class SubCity
     #consctruct a scenario for building the city, copies information and goes from that
     def build_scenario(self):
         city_plan=CityPlan(self.H,self.W)
@@ -317,14 +326,15 @@ class CityInfo:
     def get_utility_building(self):
         pass
         
-        
+    #receives self and _list of SubCity type args   -- see function construct  
     def unit_city(self,_list):
-        city_plan= CityPlan(self.H,self.W)
+        city_plan= CityPlan(self.H,self.W) #create cityplan through self size
         
         startpoint=(0,0)
         
+        #lets go through all sub_city from _list and add them to the city_plan
         for sub_city in _list:
-            self.construct_building(startpoint,sub_city)
+            self.construct_building(startpoint,sub_city) #consctruct
             for residental_project in sub_city.resi_building:
                 updated_cell=[]
                 for x,y in residental_project.coordinates:
@@ -380,7 +390,7 @@ class CityInfo:
         return city_plan
             
             
-    
+    #updates self.plan to project.plan cells (receives self, startpoint and project)
     def construct_building(self,startpoint,project):
         for x in range(len(project.plan)):
             for y in range(len(project.plan)):
