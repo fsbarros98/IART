@@ -6,7 +6,7 @@ Updated until 18/03/2020
 """
 import math
 import copy
-
+from random import shuffle
 
 #empty_matrix(i,j) returns an empty matrix of size (i,j) - list type: of points '.'
 def empty_matrix(i,j):
@@ -80,7 +80,7 @@ class SubCity:
         #copy residental and utility projects to new variables (same names)
         residental_projects=copy.copy(self.residental_projects) 
         utility_projects=copy.copy(self.utility_projects)
-        
+
         finish=False #flag 
         
         while not finish:
@@ -176,7 +176,7 @@ class SubCity:
         updated_cell=[]
         filtered_cell=[]
         
-        def undolog_plan(): #functions that solves the plan if project doens't fit: turns updates cells into free cells
+        def undolog_plan(): #functions that solves the plan if project doens't fit: turns updated cells into free cells
             for x_cell,y_cell in updated_cell:
                 self.plan[x_cell][y_cell]='.'
                 
@@ -230,6 +230,7 @@ class CityInfo:
         
         if isinstance(project,residental_Project):
             self.residental_projects.append(project)
+
             
         elif isinstance(project,Utility_Project):
             self.utility_projects.append(project)
@@ -269,7 +270,7 @@ class CityInfo:
         city_plan=CityPlan(self.H,self.W)
         residental_projects=copy.copy(self.residental_projects)
         utility_projects=copy.copy(self.utility_projects)
-        
+
         finish=False #flag
         
         while not finish:
@@ -277,6 +278,7 @@ class CityInfo:
             empty_cell=False
             
             if residental_projects:
+               
                 residental_project=residental_projects.pop() #takes argument, updates lisst
               
                 residental_projects_not_construct=True
@@ -299,6 +301,7 @@ class CityInfo:
             free_cell=self.get_free_cells()
             
             if utility_projects:
+
                 utility_project=utility_projects.pop()
                 
                 utility_projects_not_construct=True
@@ -420,7 +423,7 @@ class ProjectType:
         #h=rows, w=columns
         #i=information, capacity if t=R or utility type if t=U
         if t=='R':
-            return residental_Project(h,w,i,index)
+            return Residental_Project(h,w,i,index)
         elif t=='U':
            
             return Utility_Project(h,w,i,index)
@@ -467,7 +470,7 @@ class BuildingPlan:
             
         return free_cell
     
-    #verifies if hole is inside
+    #verifies if hole is inside - using previous functions
     def is_hole_inside(self):
         i,j=self.find_dots()
         
@@ -566,9 +569,9 @@ class BuildingPlan:
 
  
 #define type of building plan: residence     
-class residental_Project(BuildingPlan): #super   
+class Residental_Project(BuildingPlan): #super   
     def __init__(self, h,w,capacity,idx):
-        super(residental_Project,self).__init__(h,w,idx)
+        super(Residental_Project,self).__init__(h,w,idx)
         self.capacity=int(capacity) 
  
 
@@ -592,7 +595,7 @@ class InputParser:
             city=CityInfo.specs(city_type)
             #knowing now the first city specs, we can now learn it's buildings
             
-            for building in range(city.bplans):
+            for building in range(0,city.bplans):
                 read_project_info=file.readline()
                 
                 building_project=ProjectType.specs(read_project_info,building)
@@ -609,6 +612,9 @@ class InputParser:
                         
                 if building_project.validate():
                     city.add_project(building_project)
+        #shuffle to obtain diffent solutions
+        shuffle(city.residental_projects)
+        shuffle(city.utility_projects)
                     
         return city
                         
@@ -634,18 +640,25 @@ def result(file_path, city_plan, *args, **kwargs):
 
 
 if __name__ == '__main__':
-    #create input parser 
-    input_parser=InputParser()
-    city=input_parser("data/a_example.in")
+    #added this for so we can obtain different solutions
+    for i in range(10):
+        #create input parser 
+        input_parser=InputParser()
+        city=input_parser("data/b_short_walk.in")
     
     #for project in city.projects:
     #    print(project.plan)
     #construct city plan
-    city_plan=city.construct()
+    
+    
+        city_plan=city.construct()
+    
     #print city value
-    print("city value {}".format(city_plan.value))
+        print("city value {}".format(city_plan.value))
+    
+    
     #save results
-    result('result_a_example.txt',city_plan)
+        result('res_b_short_walk'+str(i)+'.txt',city_plan)
 
     
 
