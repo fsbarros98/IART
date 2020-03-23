@@ -151,22 +151,38 @@ class SubCity:
     def construct(self):
         city_plan=self.build_scenario()
         value=0
-        utility_services={}
+#        utility_services={}
+#        
+#        
+#        for util_building in city_plan.util_building:
+#            utility_services[util_building.service]=[]
+#            i=0
+#            for resi_building in city_plan.resi_building:
+#                if i in utility_services[util_building.service]: #selects type of service of the building
+#                    i+=1
+#                    continue
+#                if self.verify_distance(resi_building, util_building): #if distance is smaller then maximum walking distance
+#                    #appends type of service of the utility building to utility_services 
+#                    utility_services[util_building.service].append(i)
+#                    #calculation of the value = value + capacity of the building
+#                    value += resi_building.capacity
+#                i+=1
+        utility_services=[]
         
         
         for util_building in city_plan.util_building:
-            utility_services[util_building.service]=[]
-            i=0
-            for resi_building in city_plan.resi_building:
-                if i in utility_services[util_building.service]: #selects type of service of the building
-                    i+=1
-                    continue
-                if self.verify_distance(resi_building, util_building): #if distance is smaller then maximum walking distance
+            if util_building.service in utility_services:
+                pass
+            else:
+                for resi_building in city_plan.resi_building:
+                    if self.verify_distance(util_building, resi_building): #if distance is smaller then maximum walking distance
                     #appends type of service of the utility building to utility_services 
-                    utility_services[util_building.service].append(i)
+                    
+                        value += resi_building.capacity
+                        
+                    
                     #calculation of the value = value + capacity of the building
-                    value += resi_building.capacity
-                i+=1
+            utility_services.append(util_building.service)
         #updates city_plan balue    
         city_plan.value=value
         return city_plan
