@@ -144,7 +144,7 @@ class SubCity:
         pass
     
 #For every residential building with a capacity r placed on the map, the submission will earn r points for
-#every t ype of utility service accessible to the residents of that building. (If there are two or more utility
+#every type of utility service accessible to the residents of that building. (If there are two or more utility
 #buildings providing the same type of service, the residential building still earns only r points for this type of
 #service.)   
     #this function builds the scenario of the city and then calculates it's value through the description above
@@ -179,11 +179,10 @@ class SubCity:
                     #appends type of service of the utility building to utility_services 
                     
                         value += resi_building.capacity
-                        
-                    
+                                            
                     #calculation of the value = value + capacity of the building
             utility_services.append(util_building.service)
-        #updates city_plan balue    
+        #updates city_plan value    
         city_plan.value=value
         return city_plan
             
@@ -244,7 +243,7 @@ class CityInfo:
     def add_project(self,project):
         self.projects.append(project)
         
-        if isinstance(project,residental_Project):
+        if isinstance(project,Residental_Project):
             self.residental_projects.append(project)
 
             
@@ -655,82 +654,86 @@ def result(file_path, city_plan, *args, **kwargs):
 
 
 
+
+    # try to find optimal neighbours
+def calculate_value(city_plan):
+    value=0
+    utility_services=[]
+        
+        
+    for util_building in city_plan.util_building:
+        if util_building.service in utility_services:
+            pass
+        else:
+            for resi_building in city_plan.resi_building:
+                if verify_distance(util_building, resi_building, city.dist): #if distance is smaller then maximum walking distance
+                    #appends type of service of the utility building to utility_services 
+                    
+                    value += resi_building.capacity
+                        
+                    
+                    #calculation of the value = value + capacity of the building
+        utility_services.append(util_building.service)
+            
+    return value
+   
+
+def verify_distance(proj_A,proj_B, dist):
+    distance=None
+    for point_1 in proj_A.filtered_cell:
+        for point_2 in proj_B.filtered_cell:
+            distance=math.fabs(point_1[0]-point_2[0])+math.fabs(point_1[1]-point_2[1])
+            if distance <= dist:
+                return True
+    return False 
+
+
+
 if __name__ == '__main__':
     #added this for so we can obtain different solutions
-    for i in range(10):
+  #  for i in range(10):
         #create input parser 
-        input_parser=InputParser()
-        city=input_parser("data/b_short_walk.in")
+    input_parser=InputParser()
+    city=input_parser("data/test.in")
     
     #for project in city.projects:
     #    print(project.plan)
     #construct city plan
     
     
-        city_plan=city.construct()
+    city_plan=city.construct()
     
     #print city value
-        print("city value {}".format(city_plan.value))
+    print("city value {}".format(city_plan.value))
     
     
     #save results
-        result('res_b_short_walk'+str(i)+'.txt',city_plan)
+    result('res_test.txt',city_plan)
 
     
-    # try to find optimal neighbours
-    #########################################################################
-    def calculate_value(city_plan):
-        value=0
-        utility_services=[]
-        
-        
-        for util_building in city_plan.util_building:
-            if util_building.service in utility_services:
-                pass
-            else:
-                for resi_building in city_plan.resi_building:
-                    if verify_distance(util_building, resi_building, city.dist): #if distance is smaller then maximum walking distance
-                    #appends type of service of the utility building to utility_services 
-                    
-                        value += resi_building.capacity
-                        
-                    
-                    #calculation of the value = value + capacity of the building
-            utility_services.append(util_building.service)
-            
-        return value
- #########################################################################  
 
-    def verify_distance(proj_A,proj_B, dist):
-        distance=None
-        for point_1 in proj_A.filtered_cell:
-            for point_2 in proj_B.filtered_cell:
-                distance=math.fabs(point_1[0]-point_2[0])+math.fabs(point_1[1]-point_2[1])
-                if distance <= dist:
-                    return True
-        return False 
-# =============================================================================
-#    newcities=[]
-#    i=0
-#    
-#    for project in city_plan.resi_building:
-#        citycopy=copy.copy(city_plan)
-#        for residential in city.residental_projects:
-#            if project.h == residential.h and project.w == residential.w:
-#                citycopy.resi_building[city_plan.resi_building.index(project)]=residential
-#                if (calculate_value(citycopy) > calculate_value(city_plan)):
-#                    newcities[i]=citycopy
-#                    i+=1
-#                    
-#    for project in city_plan.util_building:
-#        citycopy=copy.copy(city_plan)
-#        for utility in city.utility_projects:
-#            if project.h == utility.h and project.w == utility.w:
-#                citycopy.util_building[city_plan.util_building.index(project)]=utility
-#                if (calculate_value(citycopy) > calculate_value(city_plan)):
-#                    newcities[i]=citycopy
-#                    i+=1 
-# =============================================================================
+#=============================================================================
+    newcities=[]
+    i=0
+    
+    for project in city_plan.resi_building:     
+        for residential in city.residental_projects:
+            citycopy=copy.copy(city_plan)
+            if project.h == residential.h and project.w == residential.w:
+                citycopy.resi_building[city_plan.resi_building.index(project)]=residential
+                if (calculate_value(citycopy) > calculate_value(city_plan)):
+                    newcities[i]=citycopy
+                    i+=1
+                    
+    for project in city_plan.util_building:    
+        for utility in city.utility_projects:
+            citycopy=copy.copy(city_plan)
+            if project.h == utility.h and project.w == utility.w:
+                citycopy.util_building[city_plan.util_building.index(project)]=utility
+                if (calculate_value(citycopy) > calculate_value(city_plan)):
+                    newcities[i]=citycopy
+                    i+=1 
+#=============================================================================
 
     
         # Possible cases
