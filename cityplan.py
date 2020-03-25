@@ -41,8 +41,8 @@ class CityPlan:
                 if self.verify_distance(util_building,resi_building):
                     if util_building.service not in utility_services:
                         utility_services.append(util_building.service)
-                        value += resi_building.capacity * len(utility_services)
-                        utility_services=[]
+            value += resi_building.capacity * len(utility_services)
+            utility_services=[]
         
         self.value=value
         return value
@@ -689,7 +689,7 @@ def result(file_path, city_plan, *args, **kwargs):
 
 
     # try to find optimal neighbours
-def calculate_value(city_plan):
+def calculateee_value(city_plan):
     value=0
     utility_services=[]
         
