@@ -29,9 +29,34 @@ class CityPlan:
         self.value=0
         
     def get_building_numbers(self):
+    
         return (len(self.resi_building)+len(self.util_building))
 
-
+    def calculate_value(self):
+        value=0
+        utility_services=[]
+    
+        for resi_building in self.resi_building:   
+            for util_building in self.util_building:
+                if self.verify_distance(util_building,resi_building):
+                    if util_building.service not in utility_services:
+                        utility_services.append(util_building.service)
+                        value += resi_building.capacity * len(utility_services)
+                        utility_services=[]
+        
+        self.value=value
+        return value
+        
+    def verify_distance(self,proj_A,proj_B):
+        distance=None
+        for point_1 in proj_A.filtered_cell:
+            for point_2 in proj_B.filtered_cell:
+                distance=math.fabs(point_1[0]-point_2[0])+math.fabs(point_1[1]-point_2[1])
+                if distance <= 1:
+                    return True
+        return False
+        
+   
 class SubCity:
     def __init__(self,H,W,residental_projects,utility_projects,dist):
         self.H=H
@@ -196,7 +221,8 @@ class SubCity:
         city_plan.value=value
         
         return city_plan
-            
+    
+    
 #consctructs building if it can fit the plan: receives self,startpoint and the project
     def construct_building(self,startpoint,project): 
         updated_cell=[]
@@ -435,11 +461,7 @@ class CityInfo:
                 _x,_y=(x+startpoint[0],y+startpoint[1])
                 self.plan[_x][_y]=project.plan[x][y]
         
-        
-        
-        
-
-
+    
 #Select project type of Building Plan
 class ProjectType: 
     @staticmethod
@@ -728,23 +750,29 @@ if __name__ == '__main__':
     #save results
     result('res_test.txt',city_plan)
     
-    for residential in city_plan.resi_building:
-        print(residential)
- #=============================================================================
-#    newcities=[]
-#    i=0
+#    project = city_plan.resi_building[0]
+#    newcity=[]
 #    citycopy=copy.copy(city_plan)
+#    city_value = city_plan.calculate_value()
 #    
-#    for project in city_plan.resi_building:     
-#        for residential in city.residental_projects:
-#            print(residential)
-#            if project.h == residential.h and project.w == residential.w:
-#                citycopy.resi_building[city_plan.resi_building.index(project)]=residential
-#                print(calculate_value(citycopy))
-#                if (calculate_value(citycopy) > calculate_value(city_plan)):
-#                    newcities[i]=citycopy
-#                    i+=1
-#                    citycopy=copy.copy(city_plan)
+#    
+#    for residential in city_plan.resi_building:
+#        if project.h == residential.h and project.w == residential.w:
+#            citycopy.resi_building[city_plan.resi_building.index(project)]=residential
+#            if (citycopy.calculate_value() > city_value):
+#                newcity.append(citycopy)
+#                citycopy=copy.copy(city_plan)
+ #=============================================================================
+    newcities=[]
+    i=0
+    citycopy=copy.copy(city_plan)
+    
+    for project in city_plan.resi_building:     
+        for residential in city.residental_projects:
+            if project.h == residential.h and project.w == residential.w and residential.capacity > project.capacity:
+                citycopy.resi_building[city_plan.resi_building.index(project)]=residential
+                newcities.append(citycopy)
+                citycopy=copy.copy(city_plan)
 #                    
 #    for project in city_plan.util_building:    
 #        for utility in city.utility_projects:
