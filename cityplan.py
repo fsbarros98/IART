@@ -402,8 +402,8 @@ class CityInfo:
         #hyper-parameter: beaware of city size for these parameters
         #a sub_city is created bellow with this hyper-paramentes
 
-        sub_city_h=4
-        sub_city_w=7
+        sub_city_h=10
+        sub_city_w=10
         count=int((self.H * self.W) / (sub_city_h * sub_city_w)) #how many sub_city(s) fit in the city? -> count type int
         
         residental_projects=copy.copy(self.residental_projects)
@@ -712,7 +712,7 @@ if __name__ == '__main__':
   #  for i in range(10):
         #create input parser 
     input_parser=InputParser()
-    city=input_parser("data/a_example.in")
+    city=input_parser("data/b_short_walk.in")
     
     #for project in city.projects:
     #    print(project.plan)
@@ -728,39 +728,33 @@ if __name__ == '__main__':
     #save results
     result('res_test.txt',city_plan)
     
-    value=0
-    utility_services=[]
-    for resi_building in city_plan.resi_building:   
-            for util_building in city_plan.util_building:
-                if verify_distance(util_building,resi_building, city.dist):
-                    if util_building.service not in utility_services:
-                        utility_services.append(util_building.service)
-            value += resi_building.capacity * len(utility_services)
-    
-
-# #=============================================================================
-#     newcities=[]
-#     i=0
-    
-#     for project in city_plan.resi_building:     
-#         for residential in city.residental_projects:
-#             citycopy=copy.copy(city_plan)
-#             if project.h == residential.h and project.w == residential.w:
-#                 citycopy.resi_building[city_plan.resi_building.index(project)]=residential
-#                 if (calculate_value(citycopy) > calculate_value(city_plan)):
-#                     newcities[i]=citycopy
-#                     i+=1
-                    
-#     for project in city_plan.util_building:    
-#         for utility in city.utility_projects:
-#             citycopy=copy.copy(city_plan)
-#             if project.h == utility.h and project.w == utility.w:
-#                 citycopy.util_building[city_plan.util_building.index(project)]=utility
-#                 if (calculate_value(citycopy) > calculate_value(city_plan)):
-#                     newcities[i]=citycopy
-#                     i+=1 
-# #=============================================================================
-
+    for residential in city_plan.resi_building:
+        print(residential)
+ #=============================================================================
+#    newcities=[]
+#    i=0
+#    citycopy=copy.copy(city_plan)
+#    
+#    for project in city_plan.resi_building:     
+#        for residential in city.residental_projects:
+#            print(residential)
+#            if project.h == residential.h and project.w == residential.w:
+#                citycopy.resi_building[city_plan.resi_building.index(project)]=residential
+#                print(calculate_value(citycopy))
+#                if (calculate_value(citycopy) > calculate_value(city_plan)):
+#                    newcities[i]=citycopy
+#                    i+=1
+#                    citycopy=copy.copy(city_plan)
+#                    
+#    for project in city_plan.util_building:    
+#        for utility in city.utility_projects:
+#            if project.h == utility.h and project.w == utility.w:
+#                citycopy.util_building[city_plan.util_building.index(project)]=utility
+#                if (calculate_value(citycopy) > calculate_value(city_plan)):
+#                    newcities[i]=citycopy
+#                    i+=1 
+#                    citycopy=copy.copy(city_plan)
+ #=============================================================================
     
         # Possible cases
     # ("data/b_short_walk.in")
