@@ -84,7 +84,7 @@ class CityPlan:
         for point_1 in proj_A.filtered_cell:
             for point_2 in proj_B.filtered_cell:
                 distance=manhattan_distance(point_1, point_2)
-                if distance <= self.dist: #não esquecer mudar isto
+                if distance <= self.dist: 
                     return True
         return False
         
@@ -127,10 +127,11 @@ class SubCity:
         distance=None
         for point_1 in proj_A.filtered_cell:
             for point_2 in proj_B.filtered_cell:
-                distance=math.fabs(point_1[0]-point_2[0])+math.fabs(point_1[1]-point_2[1])
-                if distance <= self.dist:
+                distance=manhattan_distance(point_1, point_2)
+                if distance <= self.dist: 
                     return True
         return False
+        
                 
     #returns last free cell in city plan (matrix)
     def get_last_free_cell(self):
@@ -217,14 +218,15 @@ class SubCity:
     def construct(self):
         city_plan=self.build_scenario()
         value=0
-
+        utility_services=[]
         for resi_building in city_plan.resi_building:   
             for util_building in city_plan.util_building:
                 if self.verify_distance(util_building,resi_building):
-                    if util_building.service not in resi_building.utility_services:
-                        resi_building.utility_services.append(util_building.service)
-            value += resi_building.capacity * len(resi_building.utility_services)
-        
+                    if util_building.service not in utility_services:
+                        utility_services.append(util_building.service)
+            value += resi_building.capacity * len(utility_services)
+            resi_building.utility_services=utility_services
+            utility_services=[]
         city_plan.value=value
         
         return city_plan
@@ -661,14 +663,11 @@ class InputParser:
         with open(data_path) as file:
             
             city_type=file.readline() #read first line with city information
-            
-            
             city=CityInfo.specs(city_type)
             #knowing now the first city specs, we can now learn it's buildings
             
             for building in range(0,city.bplans):
-                read_project_info=file.readline()
-                
+                read_project_info=file.readline()               
                 building_project=ProjectType.specs(read_project_info,building)
                 
                 for i in range(building_project.h):
@@ -690,8 +689,6 @@ class InputParser:
         return city
                         
                 
-
-
 
 ############################################################################### 
 #create submission file as requested              
@@ -830,6 +827,7 @@ if __name__ == '__main__':
             #create winner project (best one) copy
             winner=better_projects[id]
             
+            #get what value contributed to city_plan.value and subtract it
             project_value= project.capacity * len(project.utility_services)                
             citycopy.value = citycopy.value - project_value         
             
@@ -845,12 +843,17 @@ if __name__ == '__main__':
             citycopy.resi_building[city_plan.resi_building.index(project)].idx=winner.idx
             #empty better_projects
             
+            #calculate the new value according to the value that the new project gives 
             winner_value= winner.capacity * len(winner.utility_services)                
             citycopy.value = citycopy.value + winner_value     
             
-            newcities.append(citycopy)
-            citycopy=copy.copy(city_plan)
+            #create new city
+            #newcities.append(citycopy)
             
+            #clear citycopy
+            #citycopy=copy.copy(city_plan)
+            
+            #clear better_projects
             better_projects=[]
 #            
 #            
