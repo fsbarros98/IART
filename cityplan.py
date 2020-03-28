@@ -7,7 +7,14 @@ Updated until 18/03/2020
 import math
 import copy
 from random import shuffle
+from random import random
+from random import seed
+import random
 
+
+
+###############################################################################
+###############################################################################
 #empty_matrix(i,j) returns an empty matrix of size (i,j) - list type: of points '.'
 def empty_matrix(i,j):
     matrix=[]
@@ -763,11 +770,10 @@ def best_choice(list):
     return best    
 
 
-
-
-
-
-
+###############################################################################
+###############################################################################
+def energy(state_value):
+    return 1/state_value
 
 
          
@@ -781,6 +787,18 @@ if __name__ == '__main__':
     input_parser=InputParser()
     city=input_parser("data/b_short_walk.in")
     
+    
+        # Possible cases
+    #city=input_parser("data/example.in")
+    city=input_parser("data/b_short_walk.in")
+    #city=input_parser("data/c_going_green.in")
+    #city=input_parser("data/d_wide_selection.in")
+    #city=input_parser("data/e_precise_fit.in")
+    #city=input_parser("data/f_different_footprints.in")
+
+    
+    
+    #print projects
     #for project in city.projects:
     #    print(project.plan)
     #construct city plan
@@ -789,11 +807,11 @@ if __name__ == '__main__':
     city_plan=city.construct()
     
     #print city value
-    print("city value {}".format(city_plan.value))
+    print("Initial solution score: {}".format(city_plan.value))
     
     
     #save results
-    result('res_test.txt',city_plan)
+    result('Result_Initial_Solution.txt',city_plan)
 
 
 
@@ -804,6 +822,15 @@ if __name__ == '__main__':
 ###############################################################################
 
 
+
+###############################################################################
+    ###                       Hill-Climbing                            ###
+    # Start from initial solution (valid) search for the best neighbour
+    # Changes all projects that are residental to a project with same dimensions
+    # but bigger capacity, resulting in a better final project
+###############################################################################
+
+    print("Start Hill Climbing Search... ")
     newcities=[]
     i=1
     better_projects=[]
@@ -812,6 +839,7 @@ if __name__ == '__main__':
     
     for project in city_plan.resi_building: #resi_building in city_plan are the projects placed in the city 
         for residential in city.residental_projects: #residental_projects in city are the projects available
+            
             if (project.h == residential.h) and (project.w == residential.w) and (not(residential.capacity <= project.capacity)):              
                 #add better projects than project in city_plan to better projects
                 better_projects.append(residential)
@@ -850,39 +878,170 @@ if __name__ == '__main__':
             
             #clear better_projects
             better_projects=[]
-#            
-#            
-#            
-        
-        
-        
-        
-                        
-                
-                        
-         
+            
+    print("Solution Found!")        
+    best_solution=copy.copy(citycopy)
+    print("Hill Climbing solution score: {}".format(best_solution.value))
+    result('Result_Hill_Climbing.txt',best_solution)
 
 
+###############################################################################
+    ###                       Simulated Annealing                       ###
+    # Start from initial solution (valid)
+    # While temperature does not change to 0, search for neighbour solution
+    # The variable energy is inversely proportional to the score, so the 
+    # state with the least energy is the most optimal
+    # Hyper-parameters: alpha - decay rate of temperature
+###############################################################################
 
-            
-            
-            
-            
-#                    
-#    for project in city_plan.util_building:    
-#        for utility in city.utility_projects:
-#            if project.h == utility.h and project.w == utility.w:
-#                citycopy.util_building[city_plan.util_building.index(project)]=utility
-#                if (calculate_value(citycopy) > calculate_value(city_plan)):
-#                    newcities[i]=citycopy
-#                    i+=1 
-#                    citycopy=copy.copy(city_plan)
- #=============================================================================
+    print("Start Simulated Annealing Search...")
     
-        # Possible cases
-    # ("data/b_short_walk.in")
-    # ("data/c_going_green.in")
-    # ("data/d_wide_selection.in")
-    # ("data/e_precise_fit.in")
-    # ("data/f_different_footprints.in")
+    random_solution=copy.copy(city_plan)
+    current_state=random_solution
+    
+    
+    #Define temperature
+    temperature=1000
+    t=temperature
+    
+    #alpha
+    alpha=[0.1,0.3,0.01,0.03,0.001,0.003,0.0001,0.0003]
+    for i in range(0,len(alpha)):
+        while(t>0.0000000001):
+            
+            #DECAY RATE
+            t=t*alpha[i]
+            
+            
+            #DEFINE NEIGHBOUR: RANDOMLY ALTER RESI_BUILDING
+            #define next state: can be done be exchange residental or utility buildings of same dimensions
+            #firstly, lets keep it simple and exchange for resi_building only
+            #select random project to exchange
+            seed(1)
+            index_old=random.randrange(0,len(current_state.resi_building))
+            project_to_exchange=copy.copy(current_state.resi_building[index_old])
+            
+            
+            #select random neighbour
+            
+            #colect projects that have the same dimensions
+            residental_projects_same_dim=[]
+            for residential in city.residental_projects:
+                if (project_to_exchange.h == residential.h) and (project_to_exchange.w == residential.w):
+                    residental_projects_same_dim.append(residential)
+                    
+            #select one randomly
+            index_new=random.randrange(0,len(residental_projects_same_dim))
+            project_new=copy.copy(residental_projects_same_dim[index_new])
+            
+            #define new state - same as previous - changes next
+            next_state=copy.copy(current_state)
+            
+            #get what value contributed to city_plan.value and subtract it
+            old_project_value= project_to_exchange.capacity * len(project_to_exchange.utility_services)                
+            next_state.value = current_state.value - old_project_value  
+            
+            #switch coordinates of the projects to the original ones
+            switch_projects(project_to_exchange,project_new)
+            #change the plan in next_state
+            next_state.resi_building[index_old].plan=project_new.plan
+            #change the capacity in next_state
+            next_state.resi_building[index_old].capacity=project_new.capacity
+            #change filtered_cells
+            next_state.resi_building[index_old].filtered_cell=project_new.filtered_cell
+            #change project index
+            next_state.resi_building[index_old].idx=project_new.idx
 
+            #calculate the new value according to the value that the new project gives 
+            new_project_value= project_new.capacity * len(project_new.utility_services)                
+            next_state.value = next_state.value + new_project_value     
+            
+            
+            #ENERGY
+            energy_delta=energy(next_state.value)-energy(current_state.value)
+            
+            if ((energy_delta<0) or (math.exp((-energy_delta)/t)>=random.randrange(0,10))):
+                current_state=next_state
+        
+        
+        print("Solution Found!")            
+        final_state=next_state
+        print("Alpha = {}".format(alpha[i]))
+        print("Simulated Annealing solution score: {}".format(final_state.value))
+        result('Result_Simulated_Annealing.txt',city_plan)
+
+###############################################################################
+    ###                       Tabu Search                             ###
+    # Start from initial solution (valid)
+    # While a certain number of iterations, find better neighbour
+    # 
+###############################################################################
+        
+    #set initial solution
+    s=copy.copy(city_plan)
+    s_best=s
+    #set empty tabu list
+    tabu_list=[]
+    
+    #set number of iterations
+    n_iter=100
+    
+    #set tabu list maximum size
+    tabu_list_max_size=100
+    
+    #counter
+    counter=0
+    
+    while (counter<=n_iter):
+            
+        #generate neighbours - all possible
+        neighbours=[]
+                       
+            
+        for project in s.resi_building: #resi_building in city_plan are the projects placed in the city 
+            for residential in city.residental_projects: #residental_projects in city are the projects available       
+                if (project.h == residential.h) and (project.w == residential.w):
+                    residental_projects_same_dim.append(residential)
+                    
+                    #define neighbour
+                    neighbour=copy.copy(s)
+            
+                    #get what value contributed to city_plan.value and subtract it
+                    old_project_value= project.capacity * len(project.utility_services)                
+                    neighbour.value = s.value - old_project_value  
+            
+                    #switch coordinates of the projects to the original ones
+                    switch_projects(residential,project)
+                    #change the plan in neighbour
+                    neighbour.resi_building[s.resi_building.index(project)].plan=residential.plan
+                    #change the capacity in neighbour
+                    neighbour.resi_building[s.resi_building.index(project)].capacity=residential.capacity
+                    #change filtered_cells
+                    neighbour.resi_building[s.resi_building.index(project)].filtered_cell=residential.filtered_cell
+                    #change project index
+                    neighbour.resi_building[s.resi_building.index(project)].idx=residential.idx
+
+                    #calculate the new value according to the value that the new project gives 
+                    new_project_value= residential.capacity * len(residential.utility_services)                
+                    neighbour.value = neighbour.value + new_project_value             
+                        
+                    neighbours.append(neighbour)
+            
+        for i in range(0,len(neighbours)):
+            if neighbours[i] not in tabu_list and neighbours[i]>s.value:
+                best_candidate=neighbours[i]
+            
+        if best_candidate.value > s_best.value:
+            s_best=best_candidate
+            
+        tabu_list.append(best_candidate)
+            
+        if len(tabu_list)>tabu_list_max_size:
+            tabu_list.remove[0]
+            
+            
+        counter=counter+1
+            
+    print("Solution Found!")            
+    final_state_tabu_search=s_best
+    print("Tabu Search solution score: {}".format(final_state_tabu_search.value))
