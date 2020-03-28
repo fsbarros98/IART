@@ -20,6 +20,7 @@ def manhattan_distance(x,y):
     return (math.fabs(x[0]-y[0])+math.fabs(x[1]-y[1]))
 
 ###############################################################################
+###############################################################################
 #class used in final plan of the city
 class CityPlan:
     def __init__(self,H,W,dist):
@@ -93,6 +94,7 @@ class CityPlan:
     
     
 ###############################################################################
+###############################################################################
 class SubCity:
     def __init__(self,H,W,residental_projects,utility_projects,dist):
         self.H=H
@@ -128,7 +130,7 @@ class SubCity:
         for point_1 in proj_A.filtered_cell:
             for point_2 in proj_B.filtered_cell:
                 distance=manhattan_distance(point_1, point_2)
-                if distance <= self.dist: 
+                if distance <= self.dist:#if any of the points are in less distance than self.dist, then true
                     return True
         return False
         
@@ -153,9 +155,11 @@ class SubCity:
         while not finish:
             free_cell=self.get_free_cells() #gets all free cells in the city
             empty_cell=False
+            
+            
             #resi
             if residental_projects: #are there residental_projects?
-                residental_project=copy.copy(residental_projects.pop()) 
+                residental_project=copy.copy(residental_projects.pop())                 
                 #takes 1 project from residental_projects and copies it to residental_project, 
                 #eliminating it from the list of projects
                 
@@ -170,6 +174,7 @@ class SubCity:
                         city_plan.resi_building.append(residental_project) #append the project to city_plan.resi_building
                         city_plan.plan=self.plan #update city map
                         residental_projects_not_construct=False
+                       
                         break
             else: #if there aren't residental_projects
                 empty_cell=True
@@ -194,6 +199,7 @@ class SubCity:
                         city_plan.util_building.append(utility_project)
                         city_plan.plan=self.plan
                         utility_projects_not_construct=False
+                        
                         break
                 else:
                     empty_cell=True
@@ -265,7 +271,7 @@ class SubCity:
 
 
 
-
+###############################################################################
 ###############################################################################
 #most important class where city is created with the help of class subcity
 class CityInfo:
@@ -444,8 +450,8 @@ class CityInfo:
         #hyper-parameter: beaware of city size for these parameters
         #a sub_city is created bellow with this hyper-paramentes
 
-        sub_city_h=10
-        sub_city_w=10
+        sub_city_h=20
+        sub_city_w=20
         count=int((self.H * self.W) / (sub_city_h * sub_city_w)) #how many sub_city(s) fit in the city? -> count type int
         
         residental_projects=copy.copy(self.residental_projects)
@@ -479,7 +485,7 @@ class CityInfo:
         
    
     
-    
+###############################################################################
 ###############################################################################
 #Select project type of Building Plan
 class ProjectType: 
@@ -497,6 +503,7 @@ class ProjectType:
         else:
             raise Exception('Unknown Type of Building Project')
 
+###############################################################################
 ###############################################################################
 #Create and validate Building Plan           
 class BuildingPlan: 
@@ -635,7 +642,7 @@ class BuildingPlan:
         return True
 
         
-    
+###############################################################################
 ###############################################################################
 #define type of building plan: residence     
 class Residental_Project(BuildingPlan): #super   
@@ -644,7 +651,7 @@ class Residental_Project(BuildingPlan): #super
         self.capacity=int(capacity)
         self.utility_services=[]
  
-
+###############################################################################
 ###############################################################################      
 #define type of building plan: utility     
 class Utility_Project(BuildingPlan): #super 
@@ -655,7 +662,7 @@ class Utility_Project(BuildingPlan): #super
 
 
 
-
+###############################################################################
 ###############################################################################
 #class for input parser
 class InputParser: 
@@ -688,8 +695,10 @@ class InputParser:
                     
         return city
                         
-                
+   
 
+             
+###############################################################################
 ############################################################################### 
 #create submission file as requested              
 def result(file_path, city_plan, *args, **kwargs):
@@ -710,7 +719,7 @@ def result(file_path, city_plan, *args, **kwargs):
         file.write(result)
 
 
-
+###############################################################################
 ############################################################################### 
 #when switching between projects in the city plan, we need to change the fitlered cells 
 #these corresponde to the ones that are occupied (#) showing their coordinates in the plan
@@ -727,39 +736,8 @@ def switch_projects(projA,projB): #projA - original; projB - to exchange
           
     
 
-
 ###############################################################################
-#not used 
-    # try to find optimal neighbours
-# def calculateee_value(city_plan):
-#     value=0
-#     utility_services=[]
-        
-#     for resi_building in city_plan.resi_building:   
-#         for util_building in city_plan.util_building:
-#             if verify_distance(resi_building,util_building, city.dist):
-#                 if util_building.service not in utility_services:
-#                     utility_services.append(util_building.service)
-#         value += resi_building.capacity * len(utility_services)
-#         utility_services=[]
-        
-#     # for util_building in city_plan.util_building:
-#     #     if util_building.service in utility_services:
-#     #         pass
-#     #     else:
-#     #         for resi_building in city_plan.resi_building:
-#     #             if verify_distance(util_building, resi_building, city.dist): #if distance is smaller then maximum walking distance
-#     #                 #appends type of service of the utility building to utility_services 
-                    
-#     #                 value += resi_building.capacity
-                        
-                    
-#     #                 #calculation of the value = value + capacity of the building
-#     #     utility_services.append(util_building.service)
-            
-#     return value
-   
-
+###############################################################################
 def verify_distance(proj_A,proj_B, dist):
     distance=None
     for point_1 in proj_A.filtered_cell:
@@ -771,6 +749,9 @@ def verify_distance(proj_A,proj_B, dist):
 
 
 
+
+###############################################################################
+###############################################################################
 #receives list (projects) and returns the one with higher capacity
 def best_choice(list):
     capacities=[]
@@ -780,8 +761,18 @@ def best_choice(list):
     best=capacities.index(max(capacities)) 
 
     return best    
-         
 
+
+
+
+
+
+
+
+
+         
+###############################################################################
+###############################################################################
 
 if __name__ == '__main__':
     #added this for so we can obtain different solutions
@@ -803,6 +794,10 @@ if __name__ == '__main__':
     
     #save results
     result('res_test.txt',city_plan)
+
+
+
+
 
 ###############################################################################
     ###                        OPITMIZATION PROCESS                    ###
