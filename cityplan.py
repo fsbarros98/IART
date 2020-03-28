@@ -67,7 +67,7 @@ class CityPlan:
         
         for resi_building in self.resi_building:   
             for util_building in self.util_building:
-                if abs(resi_building.coordinates[0][0]-util_building.coordinates[0][0]<5) and abs(resi_building.coordinates[0][1]-util_building.coordinates[0][1]<5):
+                if abs(resi_building.coordinates[0][0]-util_building.coordinates[0][0])<5 and abs(resi_building.coordinates[0][1]-util_building.coordinates[0][1])<5:
                     if self.verify_distance(util_building,resi_building):
                         if util_building.service not in utility_services:
                             utility_services.append(util_building.service)                  
@@ -217,15 +217,13 @@ class SubCity:
     def construct(self):
         city_plan=self.build_scenario()
         value=0
-        utility_services=[]
 
         for resi_building in city_plan.resi_building:   
             for util_building in city_plan.util_building:
                 if self.verify_distance(util_building,resi_building):
-                    if util_building.service not in utility_services:
-                        utility_services.append(util_building.service)
-            value += resi_building.capacity * len(utility_services)
-            utility_services=[]
+                    if util_building.service not in resi_building.utility_services:
+                        resi_building.utility_services.append(util_building.service)
+            value += resi_building.capacity * len(resi_building.utility_services)
         
         city_plan.value=value
         
@@ -641,7 +639,8 @@ class BuildingPlan:
 class Residental_Project(BuildingPlan): #super   
     def __init__(self, h,w,capacity,idx):
         super(Residental_Project,self).__init__(h,w,idx)
-        self.capacity=int(capacity) 
+        self.capacity=int(capacity)
+        self.utility_services=[]
  
 
 ###############################################################################      
@@ -720,6 +719,8 @@ def result(file_path, city_plan, *args, **kwargs):
 #these corresponde to the ones that are occupied (#) showing their coordinates in the plan
 def switch_projects(projA,projB): #projA - original; projB - to exchange
     projB.coordinates=projA.coordinates
+    projB.utility_services=projA.utility_services
+
     
     for x in range(projB.h):
         for y in range(projB.w):           
@@ -762,14 +763,14 @@ def switch_projects(projA,projB): #projA - original; projB - to exchange
 #     return value
    
 
-# def verify_distance(proj_A,proj_B, dist):
-#     distance=None
-#     for point_1 in proj_A.filtered_cell:
-#         for point_2 in proj_B.filtered_cell:
-#             distance=math.fabs(point_1[0]-point_2[0])+math.fabs(point_1[1]-point_2[1])
-#             if distance <= dist:
-#                 return True
-#     return False 
+def verify_distance(proj_A,proj_B, dist):
+    distance=None
+    for point_1 in proj_A.filtered_cell:
+        for point_2 in proj_B.filtered_cell:
+            distance=math.fabs(point_1[0]-point_2[0])+math.fabs(point_1[1]-point_2[1])
+            if distance <= dist:
+                return True
+    return False 
 
 
 
@@ -811,10 +812,11 @@ if __name__ == '__main__':
 ###############################################################################
 
 
-#    newcities=[]
-#    i=1
-    citycopy=copy.copy(city_plan)    
+    newcities=[]
+    i=1
     better_projects=[]
+    citycopy=copy.copy(city_plan)    
+
     
     for project in city_plan.resi_building: #resi_building in city_plan are the projects placed in the city 
         for residential in city.residental_projects: #residental_projects in city are the projects available
@@ -822,11 +824,15 @@ if __name__ == '__main__':
                 #add better projects than project in city_plan to better projects
                 better_projects.append(residential)
         
-        if better_projects:
+        if better_projects:                   
             #find best one
             id=best_choice(better_projects)
             #create winner project (best one) copy
             winner=better_projects[id]
+            
+            project_value= project.capacity * len(project.utility_services)                
+            citycopy.value = citycopy.value - project_value         
+            
             #switch coordinates of the projects to the original ones
             switch_projects(project,winner)
             #change the plan in citycopy
@@ -838,10 +844,17 @@ if __name__ == '__main__':
             #change project index
             citycopy.resi_building[city_plan.resi_building.index(project)].idx=winner.idx
             #empty better_projects
+            
+            winner_value= winner.capacity * len(winner.utility_services)                
+            citycopy.value = citycopy.value + winner_value     
+            
+            newcities.append(citycopy)
+            citycopy=copy.copy(city_plan)
+            
             better_projects=[]
-            
-            
-            
+#            
+#            
+#            
         
         
         
