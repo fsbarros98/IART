@@ -10,7 +10,7 @@ from random import shuffle
 from random import random
 from random import seed
 import random
-
+import time
 
 
 ###############################################################################
@@ -67,11 +67,7 @@ class CityPlan:
     
     #THIS IS VERY SLOW - main reason: while in the subcity, maximum distance was ~20, here, maximum distance is
     #too high, we need to optimize this in order to only calculate between buildings in a certain area
-                        
-    #way to do this: limite the calculation of distance to projects that are at max 10 rows and 10 columns nearby 
-    #(hyper parameter that must be altered with city size)                      
-        
-    #TEM DE SER MELHORADO AINDA, DEMORA MUITO    
+                            
         
         for resi_building in self.resi_building:   
             for util_building in self.util_building:
@@ -165,7 +161,7 @@ class SubCity:
             
             
             #resi
-            if residental_projects: #are there residental_projects?
+            if residental_projects: #are there any residental_projects?
                 residental_project=copy.copy(residental_projects.pop())                 
                 #takes 1 project from residental_projects and copies it to residental_project, 
                 #eliminating it from the list of projects
@@ -272,11 +268,6 @@ class SubCity:
             
         return updated_cell,filtered_cell
                     
-
-
-
-
-
 
 ###############################################################################
 ###############################################################################
@@ -829,7 +820,9 @@ if __name__ == '__main__':
     # Changes all projects that are residental to a project with same dimensions
     # but bigger capacity, resulting in a better final project
 ###############################################################################
+    start_time = time.time()
 
+    
     print("Start Hill Climbing Search... ")
     newcities=[]
     i=1
@@ -878,7 +871,9 @@ if __name__ == '__main__':
             
             #clear better_projects
             better_projects=[]
-            
+       
+    hill_time = time.time() - start_time 
+    
     print("Solution Found!")        
     best_solution=copy.copy(citycopy)
     print("Hill Climbing solution score: {}".format(best_solution.value))
@@ -893,7 +888,9 @@ if __name__ == '__main__':
     # state with the least energy is the most optimal
     # Hyper-parameters: alpha - decay rate of temperature
 ###############################################################################
+    start_time = time.time()
 
+    
     print("Start Simulated Annealing Search...")
     
     random_solution=copy.copy(city_plan)
@@ -970,13 +967,18 @@ if __name__ == '__main__':
         print("Simulated Annealing solution score: {}".format(final_state.value))
         result('Result_Simulated_Annealing.txt',city_plan)
 
+    simu_time = time.time() - start_time 
+
 ###############################################################################
     ###                       Tabu Search                             ###
     # Start from initial solution (valid)
     # While a certain number of iterations, find better neighbour
     # 
 ###############################################################################
-        
+    start_time = time.time()
+
+    
+    
     #set initial solution
     s=copy.copy(city_plan)
     s_best=s
@@ -1041,7 +1043,9 @@ if __name__ == '__main__':
             
             
         counter=counter+1
-            
+     
+    tabu_time = time.time() - start_time 
+        
     print("Solution Found!")            
     final_state_tabu_search=s_best
     print("Tabu Search solution score: {}".format(final_state_tabu_search.value))
