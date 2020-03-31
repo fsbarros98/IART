@@ -1,0 +1,109 @@
+City Plan - Hashcode 2018 - Optimizers
+
+
+For initial solution, press a:   
+For Hill Climbing search, press b:   
+For Simulated Annealing search, press c:   
+For Tabu Search, press d:   
+For Genetic Algorithm search, press e:   
+For all the above, press all:   
+
+
+To quit, press q:   
+
+all
+Initial Solution - Valid
+How many ? (1 - default): 
+
+
+Initial solution score: 15843
+
+
+
+
+
+
+Hill Climbing
+Initial solution score: 10763
+Start Hill Climbing Search... 
+Solution Found!
+Hill Climbing solution score: 26631
+Time elapsed: 0.9466204643249512
+
+
+
+
+
+
+Simulated Annealing
+Insert Temperature (100 000 - default):   
+
+
+Insert Max Time (200 - default):     
+
+
+Insert alphas (0.001,0.003,0.0001,0.0003,0.00001,0.00003 - default, separate by commas only):   
+
+
+Initial solution score: 16579
+Start Simulated Annealing Search...
+Solution Found!
+Alpha = 0.001
+Simulated Annealing solution score: 16579
+Solution Found!
+Alpha = 0.003
+Simulated Annealing solution score: 16579
+Solution Found!
+Alpha = 0.0001
+Simulated Annealing solution score: 16579
+Solution Found!
+Alpha = 0.0003
+Simulated Annealing solution score: 16579
+Solution Found!
+Alpha = 1e-05
+Simulated Annealing solution score: 16579
+Solution Found!
+Alpha = 3e-05
+Simulated Annealing solution score: 16579
+Time elapsed: 200.06726503372192
+Tabu Search
+Insert Number of Iterations (10 000 - default):   
+
+
+Insert Tabu List Max Size (1 000 - default):   
+
+
+Insert Number of Neighbours Max Size (1 000 - default):   
+
+
+Initial solution score: 16288
+Solution Found!
+Tabu Search solution score: 16288
+Time elapsed: 1.5498955249786377
+
+
+
+
+
+
+Genetic Algorithm
+Insert Number of Iterations (1 000 - default):   
+
+
+Insert Initial Population Size (10 - default):   
+
+
+Initial solution score 1: 16659
+Initial solution score 2: 14480
+Initial solution score 3: 14318
+Initial solution score 4: 13562
+Initial solution score 5: 15913
+Initial solution score 6: 16400
+Initial solution score 7: 13605
+Initial solution score 8: 16941
+Initial solution score 9: 21745
+Initial solution score 10: 12494
+Time elapsed for Initial Solution: 172.9739203453064
+Solution Found!
+Genetic Algorithm solution score: 14286
+Time elapsed: 13.449666976928711

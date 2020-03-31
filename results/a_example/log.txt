@@ -1,0 +1,85 @@
+City Plan - Hashcode 2018 - Optimizers
+
+
+For initial solution, press a:   
+For Hill Climbing search, press b:   
+For Simulated Annealing search, press c:   
+For Tabu Search, press d:   
+For Genetic Algorithm search, press e:   
+For all the above, press all:   
+
+
+To quit, press q:   
+
+all
+Initial Solution - Valid
+How many ? (1 - default): 
+
+
+Initial solution score: 50
+
+
+
+
+
+
+Hill Climbing
+Initial solution score: 50
+Start Hill Climbing Search... 
+Solution Found!
+Hill Climbing solution score: 50
+Time elapsed: 0.0007424354553222656
+
+
+
+
+
+
+Simulated Annealing
+Insert Temperature (1000 - default):   
+
+
+Insert alphas (0.1,0.3,0.01,0.03,0.001,0.003 - default):   
+
+
+Initial solution score: 50
+Start Simulated Annealing Search...
+Solution Found!
+Alpha = 0.1
+Simulated Annealing solution score: 50
+Solution Found!
+Alpha = 0.3
+Simulated Annealing solution score: 50
+Solution Found!
+Alpha = 0.01
+Simulated Annealing solution score: 50
+Solution Found!
+Alpha = 0.03
+Simulated Annealing solution score: 50
+Solution Found!
+Alpha = 0.001
+Simulated Annealing solution score: 50
+Solution Found!
+Alpha = 0.003
+Simulated Annealing solution score: 50
+Time elapsed: 0.007975101470947266
+
+
+
+
+
+
+Tabu Search
+Insert Number of Iterations (1000 - default):   
+
+
+Insert Tabu List Max Size (100 - default):   
+
+
+Insert Number of Neighbours Max Size (100 - default):   
+
+
+Initial solution score: 50
+Solution Found!
+Tabu Search solution score: 50
+Time elapsed: 0.21155047416687012
