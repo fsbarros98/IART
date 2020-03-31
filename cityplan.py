@@ -1,9 +1,9 @@
-"""
-Couse: Artificial Intelligence EIC0029
-Authors: Fátima Barros up201608444 and Miguel Ferreira up201606158
-Created on 13/03/2020
-Updated until 18/03/2020
-"""
+
+### Couse: Artificial Intelligence EIC0029
+### Authors: Fátima Barros up201608444 and Miguel Ferreira up201606158
+###   Created on 13/03/2020
+###   Upated until 31/03/2020
+
 import math
 import copy
 from random import shuffle
@@ -40,6 +40,7 @@ class CityPlan:
         
         self.value=0
         
+        self.sub_cities=[]
         
     #to preform submission file    
     def get_building_numbers(self): 
@@ -92,8 +93,50 @@ class CityPlan:
         return False
         
    
+        #receives self and _list of SubCity type args   -- see function construct  
+    def unit_city(self):
+        
+        startpoint=(0,0)
+        
+        #lets go through all sub_city from _list and add them to the city_plan
+        for sub_city in self.sub_cities:
+            self.construct_building(startpoint,sub_city) #consctruct the project: sub_city
+            #for each resi_building and util_building in sub_city: cells are updates in the residental_project and utility_project coordinates argument
+            #city_plan is also updated with the buildings it possesses 
+            
+            
+            for residental_project in sub_city.resi_building:
+                updated_cell=[]
+                for x,y in residental_project.coordinates:
+                    _x,_y=(x+startpoint[0],y+startpoint[1])
+                    updated_cell.append((_x,_y))
+                
+                residental_project.coordinates=updated_cell
+                self.resi_building.append(residental_project)
+                
+            for utility_project in sub_city.util_building:
+                updated_cell=[]
+                for x,y in utility_project.coordinates:
+                   _x,_y=(x+startpoint[0],y+startpoint[1])
+                   updated_cell.append((_x,_y))
+                   
+                utility_project.coordinates=updated_cell
+                self.util_building.append(utility_project)
+            self.plan=self.plan
+           
+            if startpoint[1]+sub_city.W*2 <= self.W:
+                startpoint=(startpoint[0],startpoint[1]+sub_city.W)
+            else:
+                startpoint=(startpoint[0]+sub_city.H,0)
+        return self
     
-    
+    #updates self.plan to project.plan cells (receives self, startpoint and project)
+    def construct_building(self,startpoint,project):
+        for x in range(len(project.plan)):
+            for y in range(len(project.plan)):
+                _x,_y=(x+startpoint[0],y+startpoint[1])
+                self.plan[_x][_y]=project.plan[x][y]
+        
     
 ###############################################################################
 ###############################################################################
@@ -108,7 +151,6 @@ class SubCity:
         self.resi_building=[]
         self.util_building=[]
         
-        self.sub_cities=[]
         
         #construct empty plan
         self.plan=empty_matrix(self.H,self.W)
@@ -449,8 +491,8 @@ class CityInfo:
         #hyper-parameter: beaware of city size for these parameters
         #a sub_city is created bellow with this hyper-paramentes
 
-        sub_city_h=10
-        sub_city_w=10
+        sub_city_h=4
+        sub_city_w=7
         count=int((self.H * self.W) / (sub_city_h * sub_city_w)) #how many sub_city(s) fit in the city? -> count type int
         
         residental_projects=copy.copy(self.residental_projects)
@@ -717,55 +759,10 @@ def result(file_path, city_plan, *args, **kwargs):
         
         file.write(result)
 
-
-###############################################################################
-############################################################################### 
-#when switching between projects in the city plan, we need to change the fitlered cells 
-#these corresponde to the ones that are occupied (#) showing their coordinates in the plan
-def switch_projects(projA,projB): #projA - original; projB - to exchange
-    projB.coordinates=projA.coordinates
-    projB.utility_services=projA.utility_services
-
-    
-    for x in range(projB.h):
-        for y in range(projB.w):           
-            if projB.plan[x][y]=="#":
-                projB.filtered_cell.append((projB.coordinates[(projB.w*x)+y]))
-     
-          
+ 
     
 
-###############################################################################
-###############################################################################
-def verify_distance(proj_A,proj_B, dist):
-    distance=None
-    for point_1 in proj_A.filtered_cell:
-        for point_2 in proj_B.filtered_cell:
-            distance=math.fabs(point_1[0]-point_2[0])+math.fabs(point_1[1]-point_2[1])
-            if distance <= dist:
-                return True
-    return False 
 
-
-
-
-###############################################################################
-###############################################################################
-#receives list (projects) and returns the one with higher capacity
-def best_choice(list):
-    capacities=[]
-    for i in range (len(list)):
-        capacities.append(list[i].capacity)
-        
-    best=capacities.index(max(capacities)) 
-
-    return best    
-
-
-###############################################################################
-###############################################################################
-def energy(state_value):
-    return 1/state_value
 
 
          
@@ -778,8 +775,8 @@ def generate_initial_solutions(number,save_result):
         input_parser=InputParser()
     
            # Possible cases - unmark wanted
-        #city=input_parser("data/example.in")
-        city=input_parser("data/b_short_walk.in")
+        city=input_parser("data/a_example.in")
+        #city=input_parser("data/b_short_walk.in")
         #city=input_parser("data/c_going_green.in")
         #city=input_parser("data/d_wide_selection.in")
         #city=input_parser("data/e_precise_fit.in")
@@ -805,8 +802,8 @@ def generate_initial_solutions(number,save_result):
             input_parser=InputParser()
     
                # Possible cases - unmark wanted
-            #city=input_parser("data/example.in")
-            city=input_parser("data/b_short_walk.in")
+            city=input_parser("data/a_example.in")
+            #city=input_parser("data/b_short_walk.in")
             #city=input_parser("data/c_going_green.in")
             #city=input_parser("data/d_wide_selection.in")
             #city=input_parser("data/e_precise_fit.in")
@@ -817,7 +814,7 @@ def generate_initial_solutions(number,save_result):
             print("Initial solution score {}: {}".format(count+1,city_plan.value))       
             #save results
             if save_result==True:
-                result('Result_Initial_Solution_'+count+'.txt',city_plan)
+                result('Result_Initial_Solution_'+str(count)+'.txt',city_plan)
             
             cities.append(city)
             city_plans.append(city_plan)
@@ -843,6 +840,30 @@ def generate_initial_solutions(number,save_result):
     # Changes all projects that are residental to a project with same dimensions
     # but bigger capacity, resulting in a better final project
 ###############################################################################
+#receives list (projects) and returns the one with higher capacity
+def best_choice(list):
+    capacities=[]
+    for i in range (len(list)):
+        capacities.append(list[i].capacity)
+        
+    best=capacities.index(max(capacities)) 
+
+    return best    
+
+ 
+#when switching between projects in the city plan, we need to change the fitlered cells 
+#these corresponde to the ones that are occupied (#) showing their coordinates in the plan
+def switch_projects(projA,projB): #projA - original; projB - to exchange
+    projB.coordinates=projA.coordinates
+    projB.utility_services=projA.utility_services
+
+    
+    for x in range(projB.h):
+        for y in range(projB.w):           
+            if projB.plan[x][y]=="#":
+                projB.filtered_cell.append((projB.coordinates[(projB.w*x)+y]))
+     
+
 def Hill_Climbing():    
     city,city_plan=generate_initial_solutions(1,save_result=False)
     start_time = time.time()   
@@ -905,7 +926,10 @@ def Hill_Climbing():
     # state with the least energy is the most optimal
     # Hyper-parameters: alpha - decay rate of temperature
 ###############################################################################
-    
+   
+def energy(state_value):
+    return 1/state_value
+
 def Simulated_Annealing(temperature,alpha):
     city,city_plan=generate_initial_solutions(1,save_result=False)
     start_time = time.time()  
@@ -1085,13 +1109,18 @@ def Tabu_Search(n_iter,tabu_list_max_size,neighbours_max_size):
     # Iterate over the initial solution
     # Solutions (City Plan type class) have the sub-cities in their variables
     # These are going to be used as the genes to mutate and reproduce
-    # Updates are only done at sub_city level, and not all city (need to add 
-    # unit_city method for that, too slow)
+    # Returns best solution in the population
 ###############################################################################
+#perfect child - best 50% from x and best 50% from y
 def reproduce(x,y):
+    if len(x.sub_cities)==1:
+        return x
     n_sub_cities=len(x.sub_cities)
     amount_x=round(n_sub_cities/2)
     amount_y=n_sub_cities-amount_x
+    #best genes - best values
+    x.sub_cities.sort(key=lambda x: x.value, reverse=True)
+    y.sub_cities.sort(key=lambda x: x.value, reverse=True)
     seed(1)
     if random.randint(0,10)<5:
         child=copy.copy(x)
@@ -1118,6 +1147,7 @@ def reproduce(x,y):
 
 def fitness(initial_population, individual,actual_iter,n_iter):
     values_initial_population=[]
+    
     for i in range(0,len(initial_population)):
         values_initial_population.append(initial_population[i].value)
     best_value_initial_population=max(values_initial_population)
@@ -1126,15 +1156,18 @@ def fitness(initial_population, individual,actual_iter,n_iter):
     if individual.value < best_value_initial_population:
         return False
     
-    if (individual.value > best_value_initial_population) and (actual_iter<n_iter*0.75):
+    if (individual.value > best_value_initial_population) and (actual_iter<(n_iter*0.70)):
         return False
         
-    if (individual.value > best_value_initial_population) and (actual_iter>n_iter*0.75):
+    if (individual.value > best_value_initial_population) or (actual_iter>=(n_iter*0.90)):
         return True  
     
+   
 def mutate(child):
     seed(1)
-    amount_mutate=random.randint(0,len(child.sub_cities))
+    if len(child.sub_cities)==1:
+        return child
+    amount_mutate=random.randint(0,0.01*len(child.sub_cities))
     
     for i in range (0,(amount_mutate)):
 
@@ -1150,14 +1183,28 @@ def mutate(child):
     
     return child
 
+
+def best_value(list):
+    values=[]
+    for it in list:
+        values.append(it.value)
+    
+    best_solution_index=values.index(max(values))
+    
+    return best_solution_index
+       
+
 def Genetic_Algorithms(initial_pop_size,n_iter):
     initial_cities,initial_population=generate_initial_solutions(initial_pop_size,save_result=False)
     start_time = time.time()
     actual_iter=0
+    
     population=initial_population
-    while (actual_iter<=n_iter):
-        #print("Iteration number: {}".format(actual_iter+1))
+    best_solutions=[]
+    while (actual_iter<n_iter):
+                 
         new_population=[]    
+
         for i in range(0,len(population)):
             seed(1)
             index_x=random.randint(0,len(initial_population))
@@ -1173,15 +1220,23 @@ def Genetic_Algorithms(initial_pop_size,n_iter):
                 child=mutate(child)
             
             new_population.append(child)
-        
-            for individual in new_population:       
+            
+            for individual in (new_population):       
                 if fitness(population,individual,actual_iter,n_iter):
-                    best_solution=individual
+                    best_solutions.append(individual)
+                    
+                    
+                
     
-        population=new_population    
+        population=new_population 
+        actual_iter=actual_iter+1
     
+
+    best_solution_index=best_value(best_solutions)
+    best_solution=best_solutions[best_solution_index]
     print("Solution Found!")         
     final_state_AG=best_solution
+    final_state_AG=final_state_AG.unit_city()
     print("Genetic Algorithm solution score: {}".format(final_state_AG.value))
     AG_time = time.time() - start_time 
     return final_state_AG,AG_time
@@ -1218,7 +1273,11 @@ if __name__ == "__main__":
     ###########################################################################    
     if input_user=='a':
         print("Initial Solution - Valid")
-        initial_city, initial_solution = generate_initial_solutions(1,save_result=True)
+        print("How many ? (1 - default): ")
+        how_many=input()
+        if not how_many:
+            how_many=1
+        initial_city, initial_solution = generate_initial_solutions(int(how_many),save_result=True)
     
     ###########################################################################    
     if input_user=='b':
@@ -1244,8 +1303,10 @@ if __name__ == "__main__":
                 alphas[i]=float(alphas[i])
         
         solution, time_elapsed = Simulated_Annealing(int(temperature),alphas)
-        for sol in range(0,len(solution)):
-            result("Result_Simulated_Annealing_"+sol+".txt",sol)
+        counter=1;
+        for sol in (solution):
+            result("Result_Simulated_Annealing_"+str(counter)+".txt",sol)
+            counter=counter+1
         print("Time elapsed: {}".format(time_elapsed))    
     
     ###########################################################################
@@ -1262,7 +1323,7 @@ if __name__ == "__main__":
         print("Insert Number of Neighbours Max Size (100 - default):   ")
         num_max_neighbours=input()
         if not num_max_neighbours:
-            tabu_list_max_size=100
+            num_max_neighbours=100
         solution, time_elapsed = Tabu_Search(int(n_iter),int(tabu_list_max_size),int(num_max_neighbours)) 
         result("Result_Tabu_Seacrh.txt",solution)
         print("Time elapsed: {}".format(time_elapsed))    
@@ -1270,14 +1331,14 @@ if __name__ == "__main__":
     ###########################################################################
     if input_user=='e':
         print("Genetic Algorithm")
-        print("Insert Number of Iterations (1000 - default):   ")
+        print("Insert Number of Iterations (10 000 - default):   ")
         n_iter=input()
         if not n_iter:
-            n_iter=1000
+            n_iter=10000
         print("Insert Initial Population Size (10 - default):   ")
         initial_pop_size=input()
         if not initial_pop_size:
-            tabu_list_max_size=10
+            initial_pop_size=10
         solution, time_elapsed = Genetic_Algorithms(int(initial_pop_size),int(n_iter)) 
         result("Result_Genetic_Algorithm.txt",solution)
         print("Time elapsed: {}".format(time_elapsed))           
@@ -1288,14 +1349,24 @@ if __name__ == "__main__":
     if input_user=='all':
         #######################################################################
         print("Initial Solution - Valid")
-        initial_city, initial_solution = generate_initial_solutions(1,save_result=True)
+        print("How many ? (1 - default): ")
+        how_many=input()
+        if not how_many:
+            how_many=1
+        initial_city, initial_solution = generate_initial_solutions(int(how_many),save_result=True)
         
+        print('\n')
+        print('\n')
+        print('\n')
         #######################################################################
         print("Hill Climbing")
         solution, time_elapsed = Hill_Climbing()
         result("Result_Hill_Climbing.txt",solution)
         print("Time elapsed: {}".format(time_elapsed))
-    
+        
+        print('\n')
+        print('\n')
+        print('\n')
         #######################################################################
         print("Simulated Annealing")
         print("Insert Temperature (1000 - default):   ")
@@ -1311,10 +1382,15 @@ if __name__ == "__main__":
             for i in range(0,len(alphas)):
                 alphas[i]=float(alphas[i])
         solution, time_elapsed = Simulated_Annealing(int(temperature),alphas)
-        for sol in range(0,len(solution)):
-            result("Result_Simulated_Annealing_"+sol+".txt",sol)
+        counter=1;
+        for sol in (solution):
+            result("Result_Simulated_Annealing_"+str(counter)+".txt",sol)
+            counter=counter+1
         print("Time elapsed: {}".format(time_elapsed))    
-    
+        
+        print('\n')
+        print('\n')
+        print('\n')
         #######################################################################
         print("Tabu Search")
         print("Insert Number of Iterations (1000 - default):   ")
@@ -1325,24 +1401,34 @@ if __name__ == "__main__":
         tabu_list_max_size=input()
         if not tabu_list_max_size:
             tabu_list_max_size=100
-        solution, time_elapsed = Tabu_Search(int(n_iter),int(tabu_list_max_size)) 
+        print("Insert Number of Neighbours Max Size (100 - default):   ")
+        num_max_neighbours=input()
+        if not num_max_neighbours:
+            num_max_neighbours=100
+        solution, time_elapsed = Tabu_Search(int(n_iter),int(tabu_list_max_size),int(num_max_neighbours)) 
         result("Result_Tabu_Seacrh.txt",solution)
-        print("Time elapsed: {}".format(time_elapsed))    
-    
+        print("Time elapsed: {}".format(time_elapsed))     
+        
+        print('\n')
+        print('\n')
+        print('\n')
         #######################################################################
         print("Genetic Algorithm")
-        print("Insert Number of Iterations (1000 - default):   ")
+        print("Insert Number of Iterations (10 000 - default):   ")
         n_iter=input()
         if not n_iter:
-            n_iter=1000
-        print("Insert Initial Population Size (10 - default):   ")
+            n_iter=10000
+        print("Insert Initial Population Size (100 - default):   ")
         initial_pop_size=input()
         if not initial_pop_size:
-            tabu_list_max_size=10
+            initial_pop_size=100
         solution, time_elapsed = Genetic_Algorithms(int(initial_pop_size),int(n_iter)) 
         result("Result_Genetic_Algorithm.txt",solution)
         print("Time elapsed: {}".format(time_elapsed))           
-    
+
+        print('\n')
+        print('\n')
+        print('\n')   
 
     
     
