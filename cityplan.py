@@ -491,8 +491,8 @@ class CityInfo:
         #hyper-parameter: beaware of city size for these parameters
         #a sub_city is created bellow with this hyper-paramentes
 
-        sub_city_h=4
-        sub_city_w=7
+        sub_city_h=20
+        sub_city_w=20
         count=int((self.H * self.W) / (sub_city_h * sub_city_w)) #how many sub_city(s) fit in the city? -> count type int
         
         residental_projects=copy.copy(self.residental_projects)
@@ -775,10 +775,10 @@ def generate_initial_solutions(number,save_result):
         input_parser=InputParser()
     
            # Possible cases - unmark wanted
-        city=input_parser("data/a_example.in")
+        #city=input_parser("data/a_example.in")
         #city=input_parser("data/b_short_walk.in")
         #city=input_parser("data/c_going_green.in")
-        #city=input_parser("data/d_wide_selection.in")
+        city=input_parser("data/d_wide_selection.in")
         #city=input_parser("data/e_precise_fit.in")
         #city=input_parser("data/f_different_footprints.in")
     
@@ -802,10 +802,10 @@ def generate_initial_solutions(number,save_result):
             input_parser=InputParser()
     
                # Possible cases - unmark wanted
-            city=input_parser("data/a_example.in")
+            #city=input_parser("data/a_example.in")
             #city=input_parser("data/b_short_walk.in")
             #city=input_parser("data/c_going_green.in")
-            #city=input_parser("data/d_wide_selection.in")
+            city=input_parser("data/d_wide_selection.in")
             #city=input_parser("data/e_precise_fit.in")
             #city=input_parser("data/f_different_footprints.in")
     
@@ -930,7 +930,7 @@ def Hill_Climbing():
 def energy(state_value):
     return 1/state_value
 
-def Simulated_Annealing(temperature,alpha):
+def Simulated_Annealing(temperature,alphas,max_time):
     city,city_plan=generate_initial_solutions(1,save_result=False)
     start_time = time.time()  
     print("Start Simulated Annealing Search...")
@@ -943,17 +943,28 @@ def Simulated_Annealing(temperature,alpha):
     
     t=temperature #entrance parameter
     
+    timing=0
     #alpha
-    alpha=alpha #entrance parameter
+    alphas=alphas #entrance parameter
     
     final_states=[]
     
-    for i in range(0,len(alpha)):
-        while(t>0.0000000001):
+    for alpha in alphas:
+        while(timing<max_time):
             
             #DECAY RATE
-            t=t*alpha[i]
+            t=t-t*alpha
             
+            if t<0:            
+               print("Solution Found!")            
+               final_state=current_state
+               final_states.append(final_state)
+               print("Alpha = {}".format(alpha))
+               print("Simulated Annealing solution score: {}".format(final_state.value))
+               result('Result_Simulated_Annealing.txt',city_plan)
+
+               simu_time = time.time() - start_time 
+               return final_states,simu_time
             
             #DEFINE NEIGHBOUR: RANDOMLY ALTER RESI_BUILDING
             #define next state: can be done be exchange residental or utility buildings of same dimensions
@@ -1001,15 +1012,16 @@ def Simulated_Annealing(temperature,alpha):
             
             #ENERGY
             energy_delta=energy(next_state.value)-energy(current_state.value)
-            
+            seed(0)
             if ((energy_delta<0) or (math.exp((-energy_delta)/t)>=random.randrange(0,10))):
                 current_state=next_state
         
-        
+            timing=time.time()-start_time
+            
         print("Solution Found!")            
         final_state=next_state
         final_states.append(final_state)
-        print("Alpha = {}".format(alpha[i]))
+        print("Alpha = {}".format(alpha))
         print("Simulated Annealing solution score: {}".format(final_state.value))
         result('Result_Simulated_Annealing.txt',city_plan)
 
@@ -1289,52 +1301,59 @@ if __name__ == "__main__":
     ###########################################################################
     if input_user=='c':
         print("Simulated Annealing")
-        print("Insert Temperature (1000 - default):   ")
+        print("Insert Temperature (100 000 - default):   ")
         temperature=input()
         if not temperature:
-            temperature=1000
-        print("Insert alphas (0.1,0.3,0.01,0.03,0.001,0.003 - default, separate by commas only):   ")
+            temperature=100000
+        print("Insert Max Time (200 - default):    ")
+        max_time=input()
+        if not max_time:
+            max_time=200
+        print("Insert alphas (0.001,0.003,0.0001,0.0003,0.00001,0.00003 - default, separate by commas only):   ")
         alphas=input()
         if not alphas:
-            alphas=[0.1,0.3,0.01,0.03,0.001,0.003]
+            alphas=[0.001,0.003,0.0001,0.0003,0.00001,0.00003]
         else:
             alphas=alphas.split(',')
             for i in range(0,len(alphas)):
                 alphas[i]=float(alphas[i])
         
-        solution, time_elapsed = Simulated_Annealing(int(temperature),alphas)
+        solution, time_elapsed = Simulated_Annealing(int(temperature),alphas,int(max_time))
         counter=1;
         for sol in (solution):
             result("Result_Simulated_Annealing_"+str(counter)+".txt",sol)
             counter=counter+1
-        print("Time elapsed: {}".format(time_elapsed))    
+        print("Time elapsed: {}".format(time_elapsed))
     
     ###########################################################################
     if input_user=='d':
         print("Tabu Search")
-        print("Insert Number of Iterations (1000 - default):   ")
-        n_iter=input()
-        if not n_iter:
-            n_iter=1000
-        print("Insert Tabu List Max Size (100 - default):   ")
-        tabu_list_max_size=input()
-        if not tabu_list_max_size:
-            tabu_list_max_size=100
-        print("Insert Number of Neighbours Max Size (100 - default):   ")
-        num_max_neighbours=input()
-        if not num_max_neighbours:
-            num_max_neighbours=100
-        solution, time_elapsed = Tabu_Search(int(n_iter),int(tabu_list_max_size),int(num_max_neighbours)) 
-        result("Result_Tabu_Seacrh.txt",solution)
-        print("Time elapsed: {}".format(time_elapsed))    
-    
-    ###########################################################################
-    if input_user=='e':
-        print("Genetic Algorithm")
         print("Insert Number of Iterations (10 000 - default):   ")
         n_iter=input()
         if not n_iter:
             n_iter=10000
+        print("Insert Tabu List Max Size (1 000 - default):   ")
+        tabu_list_max_size=input()
+        if not tabu_list_max_size:
+            tabu_list_max_size=1000
+        print("Insert Number of Neighbours Max Size (1 000 - default):   ")
+        num_max_neighbours=input()
+        if not num_max_neighbours:
+            num_max_neighbours=1000
+        solution, time_elapsed = Tabu_Search(int(n_iter),int(tabu_list_max_size),int(num_max_neighbours)) 
+        result("Result_Tabu_Seacrh.txt",solution)
+        print("Time elapsed: {}".format(time_elapsed))     
+        
+        print('\n')
+        print('\n')
+        print('\n')
+    ###########################################################################
+    if input_user=='e':
+        print("Genetic Algorithm")
+        print("Insert Number of Iterations (1 000 - default):   ")
+        n_iter=input()
+        if not n_iter:
+            n_iter=1000
         print("Insert Initial Population Size (10 - default):   ")
         initial_pop_size=input()
         if not initial_pop_size:
@@ -1369,42 +1388,43 @@ if __name__ == "__main__":
         print('\n')
         #######################################################################
         print("Simulated Annealing")
-        print("Insert Temperature (1000 - default):   ")
+        print("Insert Temperature (100 000 - default):   ")
         temperature=input()
         if not temperature:
-            temperature=1000
-        print("Insert alphas (0.1,0.3,0.01,0.03,0.001,0.003 - default):   ")
+            temperature=100000
+        print("Insert Max Time (200 - default):     ")
+        max_time=input()
+        if not max_time:
+            max_time=200
+        print("Insert alphas (0.001,0.003,0.0001,0.0003,0.00001,0.00003 - default, separate by commas only):   ")
         alphas=input()
         if not alphas:
-            alphas=[0.1,0.3,0.01,0.03,0.001,0.003]
+            alphas=[0.001,0.003,0.0001,0.0003,0.00001,0.00003]
         else:
             alphas=alphas.split(',')
             for i in range(0,len(alphas)):
                 alphas[i]=float(alphas[i])
-        solution, time_elapsed = Simulated_Annealing(int(temperature),alphas)
+        
+        solution, time_elapsed = Simulated_Annealing(int(temperature),alphas,int(max_time))
         counter=1;
         for sol in (solution):
             result("Result_Simulated_Annealing_"+str(counter)+".txt",sol)
             counter=counter+1
         print("Time elapsed: {}".format(time_elapsed))    
-        
-        print('\n')
-        print('\n')
-        print('\n')
         #######################################################################
         print("Tabu Search")
-        print("Insert Number of Iterations (1000 - default):   ")
+        print("Insert Number of Iterations (10 000 - default):   ")
         n_iter=input()
         if not n_iter:
-            n_iter=1000
-        print("Insert Tabu List Max Size (100 - default):   ")
+            n_iter=10000
+        print("Insert Tabu List Max Size (1 000 - default):   ")
         tabu_list_max_size=input()
         if not tabu_list_max_size:
-            tabu_list_max_size=100
-        print("Insert Number of Neighbours Max Size (100 - default):   ")
+            tabu_list_max_size=1000
+        print("Insert Number of Neighbours Max Size (1 000 - default):   ")
         num_max_neighbours=input()
         if not num_max_neighbours:
-            num_max_neighbours=100
+            num_max_neighbours=1000
         solution, time_elapsed = Tabu_Search(int(n_iter),int(tabu_list_max_size),int(num_max_neighbours)) 
         result("Result_Tabu_Seacrh.txt",solution)
         print("Time elapsed: {}".format(time_elapsed))     
@@ -1414,14 +1434,14 @@ if __name__ == "__main__":
         print('\n')
         #######################################################################
         print("Genetic Algorithm")
-        print("Insert Number of Iterations (10 000 - default):   ")
+        print("Insert Number of Iterations (1 000 - default):   ")
         n_iter=input()
         if not n_iter:
-            n_iter=10000
-        print("Insert Initial Population Size (100 - default):   ")
+            n_iter=1000
+        print("Insert Initial Population Size (10 - default):   ")
         initial_pop_size=input()
         if not initial_pop_size:
-            initial_pop_size=100
+            initial_pop_size=10
         solution, time_elapsed = Genetic_Algorithms(int(initial_pop_size),int(n_iter)) 
         result("Result_Genetic_Algorithm.txt",solution)
         print("Time elapsed: {}".format(time_elapsed))           
